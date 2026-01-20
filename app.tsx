@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
@@ -20,7 +19,7 @@ const App: React.FC = () => {
     window.addEventListener('online', handleStatus);
     window.addEventListener('offline', handleStatus);
     
-    // రోల్ మారినప్పుడు డీఫాల్ట్ ట్యాబ్ సెట్ చేయడం
+    // Default tab based on role
     if (role === Role.STAFF) {
       setActiveTab('m1');
     } else if (role === Role.ADMIN) {
@@ -70,14 +69,15 @@ const App: React.FC = () => {
       return <Dashboard />;
     }
     
-    const machineNum = parseInt(activeTab.replace('m', ''));
-    const machine = MACHINES.find(m => m.id === machineNum);
+    const machineIdStr = activeTab.replace('m', '');
+    const machineId = parseInt(machineIdStr, 10);
+    const machine = MACHINES.find(m => m.id === machineId);
     
     return (
       <MachineEntry 
-        machineId={machineNum} 
+        machineId={machineId} 
         machineType={machine?.type || '16lb'} 
-        machineName={machine?.name || `మెషిన్ ${machineNum}`} 
+        machineName={machine?.name || `మెషిన్ ${machineId}`} 
         onSuccess={() => { if (role === Role.ADMIN) setActiveTab('dashboard'); }} 
       />
     );
