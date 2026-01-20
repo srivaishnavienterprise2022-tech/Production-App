@@ -1,10 +1,23 @@
 import { GoogleGenAI } from "@google/genai";
 import { ProductionRecord } from "../types";
 
+// TypeScript కి process.env గురించి తెలియజేయడానికి ఈ డిక్లరేషన్ అవసరం
+declare const process: {
+  env: {
+    API_KEY: string;
+  };
+};
+
 export const getProductionInsights = async (records: ProductionRecord[]) => {
   try {
-    // Gemini API initialization according to strict guidelines
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    // API KEY ని ప్రాసెస్ ఎన్విరాన్మెంట్ నుండి నేరుగా పొందుతుంది
+    const apiKey = process.env.API_KEY;
+    
+    if (!apiKey) {
+      return "గమనిక: API Key సెట్ చేయబడలేదు. Vercel Settings లో API_KEY యాడ్ చేయండి.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     
     const summaryData = records.slice(-5).map(r => ({
       m: r.machineId,
@@ -20,7 +33,6 @@ export const getProductionInsights = async (records: ProductionRecord[]) => {
       Analyze this production data and give a very brief 2-sentence advice in Telugu to the owner: ${JSON.stringify(summaryData)}`,
     });
 
-    // Access .text property directly as per guidelines
     return response.text || "విశ్లేషణ విఫలమైంది.";
   } catch (error) {
     console.error("Gemini Error:", error);
