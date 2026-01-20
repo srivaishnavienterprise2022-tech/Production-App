@@ -3,20 +3,18 @@ import { ProductionRecord } from "../types";
 
 export const getProductionInsights = async (records: ProductionRecord[]) => {
   try {
-    // Vite config లోని 'define' ద్వారా process.env.API_KEY రీప్లేస్ చేయబడుతుంది.
-    // @ts-ignore
-    const apiKey = process.env.API_KEY;
+    // API Key ని నేరుగా initialization లో ఉపయోగిస్తున్నాము
+    // Vite build సమయంలో process.env.API_KEY అనేది vite.config.ts లోని 'define' ద్వారా ఇంజెక్ట్ అవుతుంది.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
     
-    if (!apiKey || apiKey === "") {
+    if (!process.env.API_KEY) {
       return "గమనిక: API Key సెట్ చేయబడలేదు. Vercel Settings లో API_KEY యాడ్ చేయండి.";
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-    
     const summaryData = records.slice(-5).map(r => ({
-      m: r.machineId,
-      t: r.hourlyProduction.reduce((acc, h) => acc + h.count, 0),
-      b: r.breakdown.durationMinutes
+      machine: r.machineId,
+      total: r.hourlyProduction.reduce((acc, h) => acc + h.count, 0),
+      breakdown: r.breakdown.durationMinutes
     }));
 
     if (summaryData.length === 0) return "విశ్లేషించడానికి తగినంత డేటా లేదు.";
