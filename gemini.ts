@@ -1,18 +1,10 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { ProductionRecord } from "../types";
 
 export const getProductionInsights = async (records: ProductionRecord[]) => {
   try {
-    // Vite build process లో 'process.env.API_KEY' ని స్ట్రింగ్ లాగా రీప్లేస్ చేస్తుంది.
-    // @ts-ignore
-    const apiKey = process.env.API_KEY;
-    
-    if (!apiKey || apiKey === "" || apiKey === "undefined") {
-      return "గమనిక: API Key సెట్ చేయబడలేదు. Vercel Settings లో API_KEY యాడ్ చేయండి.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Gemini API initialization according to strict guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
     const summaryData = records.slice(-5).map(r => ({
       m: r.machineId,
@@ -28,6 +20,7 @@ export const getProductionInsights = async (records: ProductionRecord[]) => {
       Analyze this production data and give a very brief 2-sentence advice in Telugu to the owner: ${JSON.stringify(summaryData)}`,
     });
 
+    // Access .text property directly as per guidelines
     return response.text || "విశ్లేషణ విఫలమైంది.";
   } catch (error) {
     console.error("Gemini Error:", error);
