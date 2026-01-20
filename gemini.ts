@@ -1,19 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { ProductionRecord } from "../types";
 
-// TypeScript కి process.env గురించి తెలియజేయడానికి ఈ డిక్లరేషన్ అవసరం
-declare const process: {
-  env: {
-    API_KEY: string;
-  };
-};
-
 export const getProductionInsights = async (records: ProductionRecord[]) => {
   try {
-    // API KEY ని ప్రాసెస్ ఎన్విరాన్మెంట్ నుండి నేరుగా పొందుతుంది
+    // Vite config లోని 'define' ద్వారా process.env.API_KEY రీప్లేస్ చేయబడుతుంది.
+    // @ts-ignore
     const apiKey = process.env.API_KEY;
     
-    if (!apiKey) {
+    if (!apiKey || apiKey === "") {
       return "గమనిక: API Key సెట్ చేయబడలేదు. Vercel Settings లో API_KEY యాడ్ చేయండి.";
     }
 
