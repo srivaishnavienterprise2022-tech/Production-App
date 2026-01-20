@@ -20,7 +20,13 @@ const App: React.FC = () => {
     window.addEventListener('online', handleStatus);
     window.addEventListener('offline', handleStatus);
     
-    if (role === Role.STAFF) setActiveTab('m1');
+    // రోల్ మారినప్పుడు డీఫాల్ట్ ట్యాబ్ సెట్ చేయడం
+    if (role === Role.STAFF) {
+      setActiveTab('m1');
+    } else if (role === Role.ADMIN) {
+      setActiveTab('dashboard');
+    }
+
     return () => {
       window.removeEventListener('online', handleStatus);
       window.removeEventListener('offline', handleStatus);
@@ -50,15 +56,36 @@ const App: React.FC = () => {
   }
 
   const NavButton = ({ tab, label, icon }: { tab: Tab, label: string, icon: string }) => (
-    <button onClick={() => setActiveTab(tab)} className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${activeTab === tab ? 'text-indigo-700 scale-110' : 'text-slate-400'}`}>
+    <button 
+      onClick={() => setActiveTab(tab)} 
+      className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${activeTab === tab ? 'text-indigo-700 scale-110' : 'text-slate-400'}`}
+    >
       <span className="text-xl mb-1">{icon}</span>
       <span className="text-[9px] font-black uppercase tracking-tighter">{label}</span>
     </button>
   );
 
+  const renderContent = () => {
+    if (activeTab === 'dashboard') {
+      return <Dashboard />;
+    }
+    
+    const machineNum = parseInt(activeTab.replace('m', ''));
+    const machine = MACHINES.find(m => m.id === machineNum);
+    
+    return (
+      <MachineEntry 
+        machineId={machineNum} 
+        machineType={machine?.type || '16lb'} 
+        machineName={machine?.name || `మెషిన్ ${machineNum}`} 
+        onSuccess={() => { if (role === Role.ADMIN) setActiveTab('dashboard'); }} 
+      />
+    );
+  };
+
   return (
     <Layout 
-      onLogout={() => setRole(null)} 
+      onLogout={() => { setRole(null); setActiveTab('dashboard'); }} 
       isOnline={isOnline} 
       title={activeTab === 'dashboard' ? TELUGU_LABELS.dashboard : `మెషిన్ ${activeTab.replace('m', '')} ఎంట్రీ`}
       bottomNav={
@@ -70,14 +97,7 @@ const App: React.FC = () => {
         </>
       }
     >
-      {activeTab === 'dashboard' ? <Dashboard /> : (
-        <MachineEntry 
-          machineId={parseInt(activeTab.replace('m', ''))} 
-          machineType={activeTab === 'm3' ? '20lb' : '16lb'} 
-          machineName={MACHINES.find(m => m.id === parseInt(activeTab.replace('m', '')))?.name || ''} 
-          onSuccess={() => { if (role === Role.ADMIN) setActiveTab('dashboard'); }} 
-        />
-      )}
+      {renderContent()}
 
       {db.getUnsyncedCount() > 0 && isOnline && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2">
